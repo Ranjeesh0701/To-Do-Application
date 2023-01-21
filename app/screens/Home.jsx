@@ -1,10 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import { auth } from '../config/firebase'
 
 const Home = () => {
+
+  const user = auth.currentUser;
+
   return (
     <View>
-      <Text>Home</Text>
+      <Text>Welcome {user.displayName}</Text>
     </View>
   )
 }

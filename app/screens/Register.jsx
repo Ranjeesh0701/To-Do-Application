@@ -1,21 +1,27 @@
-import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Alert } from 'react-native'
+import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Alert, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../config/firebase';
 
-const Register = () => {
+const Register = ({navigation}) => {
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     const signUp = () => {
-        auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
-            userCredential.user.displayName = username;
+        auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
+            auth.currentUser.updateProfile({
+              displayName: username
+            })
         }).catch((error) => {
-        Alert.alert('Error', 'User creation failed')
+          Alert.alert('Error', 'User creation failed')
         })
+    }
+
+    const navigateToLogin = () => {
+      navigation.replace('Login');
     }
 
   return (
@@ -42,8 +48,9 @@ const Register = () => {
         <View style={styles.iconContainer}></View>
         <View style={styles.iconContainer}></View>
       </View>
-      <View>
-        <Text style={styles.notAMember}>Not a member? <Text style={styles.registerNow}>Register now</Text></Text>
+      <View style={styles.redirectToLogin}>
+        <Text style={styles.alreadyAMember}>Already a member?</Text>
+        <Pressable onPress={navigateToLogin}><Text style={styles.loginNow}>Login now</Text></Pressable>
       </View>
     </KeyboardAvoidingView>
   )
@@ -114,12 +121,19 @@ const styles = StyleSheet.create({
       fontSize: 12,
       fontWeight: '600'
     },
-    notAMember: {
+    redirectToLogin: {
+      flexDirection: "row",
+      alignItems: 'center'
+    },
+    alreadyAMember: {
       paddingVertical: 25,
       fontSize: 12,
       fontWeight: '600'
     },
-    registerNow: {
+    loginNow: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginLeft: 5
     }
   
 })

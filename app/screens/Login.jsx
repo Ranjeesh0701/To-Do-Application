@@ -1,10 +1,10 @@
-import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Alert } from 'react-native'
+import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Alert, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../config/firebase';
 
-const Login = () => {
+const Login = ({navigation}) => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +15,10 @@ const Login = () => {
     }).catch((error) => {
       Alert.alert('Error', 'Authentication failed')
     })
+  }
+
+  const navigateToRegister = () => {
+    navigation.replace('Register');
   }
 
   return (
@@ -40,8 +44,8 @@ const Login = () => {
         <View style={styles.iconContainer}></View>
         <View style={styles.iconContainer}></View>
       </View>
-      <View>
-        <Text style={styles.notAMember}>Not a member? <Text style={styles.registerNow}>Register now</Text></Text>
+      <View style={styles.redirectToRegister}>
+        <Text style={styles.notAMember}>Not a member?</Text><Pressable style={styles.registerNowPressHandler}><Text style={styles.registerNow} onPress={navigateToRegister}>Register now</Text></Pressable>
       </View>
     </KeyboardAvoidingView>
   )
@@ -112,12 +116,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600'
   },
+  redirectToRegister: {
+    flexDirection: "row",
+    alignItems: "center"
+  }, 
   notAMember: {
     paddingVertical: 25,
     fontSize: 12,
     fontWeight: '600'
   },
+  registerNowPressHandler: {
+    marginLeft: 5
+  },
   registerNow: {
+    fontSize: 12,
+    fontWeight: '600'
   }
 
 })
