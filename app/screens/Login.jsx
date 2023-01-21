@@ -1,19 +1,34 @@
-import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Image } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, KeyboardAvoidingView, Alert } from 'react-native'
+import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar } from 'expo-status-bar';
+import { auth } from '../config/firebase';
 
 const Login = () => {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const signIn = () => {
+    auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
+
+    }).catch((error) => {
+      Alert.alert('Error', 'Authentication failed')
+    })
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior='padding'>
+      <StatusBar />
       <View style={styles.welcomeContainer}>
         <Text style={styles.helloText}>Hello Again!</Text>
         <Text style={styles.welcomeDescription}>Welcome back you've {'\n'} been missed!</Text>
       </View>
       <View style={styles.inputContainer}>
-        <TextInput placeholder='Enter username' style={styles.input} />
-        <TextInput placeholder='Enter password' style={styles.input} secureTextEntry={true} />
+        <TextInput placeholder='Enter email' style={styles.input} defaultValue={email} onChangeText={(value) => setEmail(value)} />
+        <TextInput placeholder='Enter password' style={styles.input} defaultValue={password} onChangeText={(value) => setPassword(value)} secureTextEntry={true} />
         <Text style={styles.recovery}>Recovery Password</Text>
-        <TouchableOpacity style={styles.signInBtn}>
+        <TouchableOpacity style={styles.signInBtn} onPress={signIn}>
           <Text style={styles.signInBtnTxt}>Sign In</Text>
         </TouchableOpacity>
       </View>
