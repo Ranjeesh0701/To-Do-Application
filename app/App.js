@@ -6,19 +6,20 @@ import Home from './screens/Home';
 import Login from './screens/Login';
 import Register from './screens/Register';
 import { auth } from './config/firebase';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-
   const [user, setUser] = useState(auth.currentUser);
 
-  auth.onAuthStateChanged((user) => {
-    if(user) {
-      setUser(user);
-    }
-  })
+  useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if(user) {
+        setUser(user);
+      }
+    })
+  }, [])
 
   return (
     <NavigationContainer>
@@ -34,7 +35,7 @@ export default function App() {
         {
           user && (
             <Stack.Navigator>
-              <Stack.Screen name="Home" component={Home} options={{title: 'Welcome'}} user={user} />
+              <Stack.Screen name="Home" component={Home} options={{headerShown: false}} user={user} />
             </Stack.Navigator>
           )
         }
