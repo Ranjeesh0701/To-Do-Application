@@ -2,7 +2,7 @@ import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, Keyboa
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
 
 const Register = ({navigation}) => {
 
@@ -14,6 +14,19 @@ const Register = ({navigation}) => {
         auth.createUserWithEmailAndPassword(email, password).then((userCredential) => {
             auth.currentUser.updateProfile({
               displayName: username
+            });
+            const uid = auth.currentUser.uid;
+            const user = {
+              id: uid,
+              email,
+              username
+            }
+            const usersRef = db.collection('users');
+            usersRef.doc(uid).set(user).then(() => {
+              navigation.navigate('Home', {user});
+            })
+            .catch((error) => {
+              Alert.alert('Error', 'User creation failed');
             })
         }).catch((error) => {
           Alert.alert('Error', 'User creation failed')

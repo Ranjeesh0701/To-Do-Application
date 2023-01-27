@@ -2,7 +2,7 @@ import { StyleSheet, Text, TextInput, View, Dimensions, TouchableOpacity, Keyboa
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
 
 const Login = ({navigation}) => {
 
@@ -11,7 +11,16 @@ const Login = ({navigation}) => {
 
   const signIn = () => {
     auth.signInWithEmailAndPassword(email, password).then((userCredential) => {
-
+      const uid = userCredential.user.uid;
+      const usersRef = db.collection('users');
+      usersRef.doc(uid).get().then((firestoreDocument) => {
+        if(!firestoreDocument.exists) {
+          Alert.alert('Error', 'User does not exist');
+          return;
+        }
+        const user = firestoreDocument.data();
+        navigation.navigate('Home', {user: user})
+      })
     }).catch((error) => {
       Alert.alert('Error', 'Authentication failed')
     })

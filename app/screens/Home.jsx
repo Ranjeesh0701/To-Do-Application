@@ -1,89 +1,119 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions } from 'react-native'
-import React from 'react'
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal } from 'react-native'
+import React, { useState } from 'react'
 import { auth } from '../config/firebase'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import CreateBottomSheet from '../components/CreateBottomSheet';
 
-const Home = () => {
+const Home = ({user}) => {
 
-  const user = auth.currentUser;
+  const [visible, setVisible] = useState(false);
+
+  const [task, setTask] = useState("");
+
+  const [time, setTime] = useState("");
+
+  const [due, setDue] = useState("");
+
+  const [tags, setTags] = useState({});
+
+  const [members, setMembers] = useState({});
+
+  const closeModal = () => {
+    setVisible(false);
+  }
+
+  const openModal = () => {
+    setVisible(true);
+  }
+
+  const username = user?.username || auth?.currentUser?.displayName;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar />
-      <ScrollView style={styles.innerContainer}>
-        <View style={styles.headerContainer}>
-          <View style={styles.headerLeftSection}>
-            <Text style={styles.greetingUser}>Hi {user.displayName}</Text>
-            <Text style={styles.pendingTasks}>
-              10 tasks pending
-            </Text>
-          </View>
-          <View style={styles.headerRightSection}>
-            <View style={styles.profileImageContainer}></View>
-          </View>
-        </View> 
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBox}>
-            <FontAwesome name='search' style={styles.searchIcon} />
-            <TextInput placeholder='Search' style={styles.searchInput} />
-          </View>
-          <View style={styles.filter}>
-            <View style={styles.filterContainer}></View>
-          </View>
-        </View>
-        <View style={styles.onGoingTaskContainer}>
-          <View style={styles.onGoingTaskHeader}>
-            <View style={styles.onGoingTaskTitle}>
-              <Text style={styles.onGoingTaskTitleText}>Ongoing Task</Text>
+    <GestureHandlerRootView style={styles.container}>
+      {
+        // visible && <View style={styles.overlay}></View>)
+      }
+      <SafeAreaView style={styles.safeContainer}>
+        <StatusBar />
+        <ScrollView style={styles.innerContainer}>
+          <View style={styles.headerContainer}>
+            <View style={styles.headerLeftSection}>
+              <Text style={styles.greetingUser}>Hi {username}</Text>
+              <Text style={styles.pendingTasks}>
+                10 tasks pending
+              </Text>
             </View>
-            <Pressable style={styles.seeAllTasks}>
-              <Text style={styles.seeAllTasksText}>See all</Text>
+            <View style={styles.headerRightSection}>
+              <View style={styles.profileImageContainer}></View>
+            </View>
+          </View> 
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBox}>
+              <FontAwesome name='search' style={styles.searchIcon} />
+              <TextInput placeholder='Search' style={styles.searchInput} />
+            </View>
+            <View style={styles.filter}>
+              <View style={styles.filterContainer}></View>
+            </View>
+          </View>
+          <View style={styles.onGoingTaskContainer}>
+            <View style={styles.onGoingTaskHeader}>
+              <View style={styles.onGoingTaskTitle}>
+                <Text style={styles.onGoingTaskTitleText}>Ongoing Task</Text>
+              </View>
+              <Pressable style={styles.seeAllTasks}>
+                <Text style={styles.seeAllTasksText}>See all</Text>
+              </Pressable>
+            </View>
+            <View style={styles.tasksContianer}>
+              <View style={styles.taskCard}>
+                <View style={styles.cardHeader}>
+                  <View style={styles.cardTitle}>
+                    <Text style={styles.cardTitleText}>Wallet App Design</Text>
+                  </View>
+                  <View style={styles.dueIn}>
+                    <Text style={styles.dueInText}>6d</Text>
+                  </View>
+                </View>
+                <View style={styles.cardDesc}>
+                  <View style={styles.timing}>
+                    <Text style={styles.timeText}>2:30 PM - 6:00 PM</Text>
+                  </View>
+                </View>
+                <View style={styles.teamContainer}>
+                  <View style={styles.teamMember}></View>
+                  <View style={styles.options}>
+                    <View style={styles.editOption}>
+                      <FontAwesome name='edit' style={styles.editOptionIcon} />
+                    </View>
+                    <View style={styles.starOption}>
+                      <FontAwesome name='star' style={styles.starOptionIcon} />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+        <View style={styles.footer}>
+          <View style={styles.homeContainer}>
+            <FontAwesome name='home' style={styles.homeIcon} />
+          </View>
+          <View style={styles.createContainer}>
+            <Pressable onPress={openModal}>
+              <FontAwesome name='plus' style={styles.plusIcon} />
             </Pressable>
           </View>
-          <View style={styles.tasksContianer}>
-            <View style={styles.taskCard}>
-              <View style={styles.cardHeader}>
-                <View style={styles.cardTitle}>
-                  <Text style={styles.cardTitleText}>Wallet App Design</Text>
-                </View>
-                <View style={styles.dueIn}>
-                  <Text style={styles.dueInText}>6d</Text>
-                </View>
-              </View>
-              <View style={styles.cardDesc}>
-                <View style={styles.timing}>
-                  <Text style={styles.timeText}>2:30 PM - 6:00 PM</Text>
-                </View>
-              </View>
-              <View style={styles.teamContainer}>
-                <View style={styles.teamMember}></View>
-                <View style={styles.options}>
-                  <View style={styles.editOption}>
-                    <FontAwesome name='edit' style={styles.editOptionIcon} />
-                  </View>
-                  <View style={styles.starOption}>
-                    <FontAwesome name='star' style={styles.starOptionIcon} />
-                  </View>
-                </View>
-              </View>
-            </View>
+          <View style={styles.profileContainer}>
+            <FontAwesome name='user' style={styles.userIcon} />
           </View>
         </View>
-      </ScrollView>
-      <View style={styles.footer}>
-        <View style={styles.homeContainer}>
-          <FontAwesome name='home' style={styles.homeIcon} />
-        </View>
-        <View style={styles.createContainer}>
-          <FontAwesome name='plus' style={styles.plusIcon} />
-        </View>
-        <View style={styles.profileContainer}>
-          <FontAwesome name='user' style={styles.userIcon} />
-        </View>
-      </View>
-    </SafeAreaView>
+        <CreateBottomSheet visible={visible} closeModal={closeModal} setVisible={setVisible} />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   )
 }
 
@@ -91,6 +121,18 @@ export default Home;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },  
+  overlay: {
+    position: 'absolute',
+    flex: 1,
+    backgroundColor: 'black',
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
+    opacity: 0.5
+  },
+  safeContainer: {
     flex: 1,
   },  
   innerContainer: {
@@ -264,6 +306,9 @@ const styles = StyleSheet.create({
   plusIcon: {
     fontSize: 25,
     color: '#1c1c1ccc'
+  },
+  createModal: {
+    
   }
 
 })
