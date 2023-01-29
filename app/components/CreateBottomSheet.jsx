@@ -1,17 +1,28 @@
-import { Dimensions, StyleSheet, Text, useAnimatedValue, View, Animated, TextInput } from 'react-native'
+import { Dimensions, StyleSheet, Text, useAnimatedValue, View, Animated, TextInput, Alert, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react';
-import DatePicker from 'react-native-datepicker';
+import DatePicker from '@react-native-community/datetimepicker';
 
 const {height:SCREEN_HEIGHT} = Dimensions.get('window');
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { auth, db } from '../config/firebase';
 
 const CreateBottomSheet = (props) => {
-    var _translateY = new Animated.Value(0); 
-    var _lastOffset = {y: 0};
-    const [date, setDate] = useState('09-10-2021');
+    
+    const [date, setDate] = useState(new Date());
+
+    const onChangeDate = (event, selectedDate) => {
+        const currentDate = date || selectedDate;
+        setDate(currentDate);
+    }   
+
+    const showMode = (currentMode) => {
+        console.log(currentMode);
+        setShow(true);
+        setMode(currentMode);
+    }
 
     // const _panGestureEvent = Animated.event([{ nativeEvent: {translationY: _translateY} }], {
     //     useNativeDriver: true
@@ -29,67 +40,138 @@ const CreateBottomSheet = (props) => {
     //     }
     //     console.log(_translateY);
     // }
+    
+    const [task, setTask] = useState("");
+
+    const [time, setTime] = useState("");
+
+    const [due, setDue] = useState("");
+
+    const [tags, setTags] = useState([]);
+
+    const [members, setMembers] = useState([]);
+    
+    const taskRef = db.collection('tasks');
+    const userId = auth.currentUser.uid;
+
+    
+
+    const createTask = () => {
+        if(task && task.length > 0 && userId) {
+            const timestamp = new Date();
+            if(userId) {
+                members.push(userId);
+            }
+            const _data = {
+                task: task,
+                members: members,
+                time: time,
+                due_by: due,
+                tags: tags,
+                userId: userId,
+                createdAt: timestamp,
+            }
+            taskRef
+                .add(_data)
+                .then(_doc => {
+                    setTask('');
+                    setMembers([]);
+                    members.push(userId);
+                    setTags({});
+                    setTime('');
+                    setDue('');
+                    props.setVisible(false);
+                    Alert.alert('Task created successfully.');
+                })
+                .catch((err) => {
+                    Alert.alert('Something went wrong.');
+                })
+        }
+    }
 
     useEffect(() => {
         if(props.visible) {
-            Animated.timing(_translateY, {
+            Animated.timing(props._translateY, {
                 toValue: -SCREEN_HEIGHT + 120,
                 duration: 600,
                 useNativeDriver: true
             }).start()
-            _lastOffset.y = -SCREEN_HEIGHT + 120;
+            props._lastOffset.y = -SCREEN_HEIGHT + 120;
         }
     } ,[props.visible])
 
   return (
     // onGestureEvent={_panGestureEvent} onHandlerStateChange={_panEventHandler}
-    <PanGestureHandler>
-        <Animated.View style={[styles.bottomSheetContainer, {transform: [{translateY: _translateY}]}]}>
-            <View style={styles.line}></View>
-            <View style={styles.container}>
-                <View>
-                    <TextInput placeholder='What do you need to do?' style={styles.taskInput} />
-                </View>
-                <View style={styles.timingContainer}>
-                    <View style={[styles.timingSection, styles.leftSection]}>
-                        <Text style={styles.inputHeader}>Time</Text>
-                       <TextInput placeholder='mm-dd-yyyy' style={styles.input} />
+    <View>
+        <PanGestureHandler>
+            <Animated.View style={[styles.bottomSheetContainer, {transform: [{translateY: props._translateY}]}]}>
+                <View style={styles.line}></View>
+                <View style={styles.container}>
+                    <View>
+                        <TextInput placeholder='What do you need to do?' style={styles.taskInput} value={task} onChangeText={text => setTask(text)} />
                     </View>
-                    <View style={[styles.timingSection, styles.rightSection]}>
-                        <Text style={styles.inputHeader}>Due by</Text>
-                       <TextInput placeholder='mm-dd-yyyy' style={styles.input} />
+                    <View style={styles.timingContainer}>
+                        <View style={[styles.timingSection, styles.leftSection]}>
+                            <Text style={styles.inputHeader}>Time</Text>
+                        {/* <TextInput placeholder='00:00' style={styles.input} value={time} onChangeText={text => setTime(text)} /> */}
+                            <DatePicker 
+                                testID='dateTimePicker'
+                                accentColor='#1c1c1ccc'
+                                value={date}
+                                mode='time'
+                                is24Hour={true}
+                                display='default'
+                                onChange={onChangeDate}
+                                style={{alignSelf: 'left', marginTop: 10}}
+                            />
+                        </View>
+                        <View style={[styles.timingSection, styles.rightSection]}>
+                            <Text style={styles.inputHeader}>Due by</Text>
+                            {/* <TextInput placeholder='mm-dd-yyyy' style={styles.input} value={due} onChangeText={text => setDue(text)} /> */}
+                            <DatePicker       
+                                testID='dateTimePicker'
+                                accentColor='#1c1c1ccc'
+                                value={date}
+                                mode='date'
+                                is24Hour={true}
+                                display='default'
+                                onChange={onChangeDate}
+                                style={{alignSelf: 'left', marginTop: 10}}
+                            />
+                        </View>
                     </View>
-                </View>
-                <View style={styles.tagsContainer}>
-                    <Text style={styles.addTags}>Add tags</Text>
-                    <View style={styles.allTagsContainer}>
-                        <Pressable style={styles.createTagContainer}>
-                            <View style={styles.createTag}>
-                                <FontAwesome style={styles.addIcon} name='plus' />
-                                <Text style={styles.addTagText}>Add tag</Text>
+                    <View style={styles.tagsContainer}>
+                        <Text style={styles.addTags}>Add tags</Text>
+                        <View style={styles.allTagsContainer}>
+                            <Pressable style={styles.createTagContainer}>
+                                <View style={styles.createTag}>
+                                    <FontAwesome style={styles.addIcon} name='plus' />
+                                    <Text style={styles.addTagText}>Add tag</Text>
+                                </View>
+                            </Pressable>
+                        </View>
+                    </View>
+                    <View style={styles.inviteContainer}>
+                        <Text style={styles.inputHeader}>Invite</Text>
+                        <View style={styles.assingedMembers}>
+                            <View style={styles.member}>
+                                <FontAwesome name='user' style={styles.userAvatar} />
                             </View>
+                            <View style={styles.assignMember}>
+                                <FontAwesome name='plus' style={styles.addIcon} />
+                            </View>
+                        </View>
+                    </View>
+                    <View style={styles.createBtnContainer}>
+                        <Pressable onPress={() => showMode('date')}>
+                            <View style={styles.createBtn}><Text style={styles.createText}>Create Task</Text></View>
                         </Pressable>
                     </View>
                 </View>
-                <View style={styles.inviteContainer}>
-                    <Text style={styles.inputHeader}>Invite</Text>
-                    <View style={styles.assingedMembers}>
-                        <View style={styles.member}>
-                            <FontAwesome name='user' style={styles.userAvatar} />
-                        </View>
-                        <View style={styles.assignMember}>
-                            <FontAwesome name='plus' style={styles.addIcon} />
-                        </View>
-                    </View>
-                </View>
-                <View style={styles.createBtnContainer}>
-                    <Pressable>
-                        <View style={styles.createBtn}><Text style={styles.createText}>Create Task</Text></View>
-                    </Pressable>
-                </View>
-            </View>
-        </Animated.View>
-    </PanGestureHandler>
+                
+            </Animated.View>
+        </PanGestureHandler>
+    </View>
   )
 }
 

@@ -1,25 +1,21 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal } from 'react-native'
-import React, { useState } from 'react'
-import { auth } from '../config/firebase'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal, Animated, Platform, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { auth, db } from '../config/firebase'
+import { SafeAreaView, withSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CreateBottomSheet from '../components/CreateBottomSheet';
+import {Ionicons} from '@expo/vector-icons';
 
-const Home = ({user}) => {
+const Home = ({navigation, user}) => {
+
+  var _translateY = new Animated.Value(0); 
+  var _lastOffset = {y: 0};
 
   const [visible, setVisible] = useState(false);
 
-  const [task, setTask] = useState("");
-
-  const [time, setTime] = useState("");
-
-  const [due, setDue] = useState("");
-
-  const [tags, setTags] = useState({});
-
-  const [members, setMembers] = useState({});
+  const [tasks, setTasks] = useState([]);
 
   const closeModal = () => {
     setVisible(false);
@@ -28,6 +24,27 @@ const Home = ({user}) => {
   const openModal = () => {
     setVisible(true);
   }
+
+  const taskRef = db.collection('tasks');
+  const userId = auth.currentUser.uid;
+
+  // getting all the tasks from db
+  useEffect(() => {
+    taskRef
+      .where("userId", "==", userId)
+      .orderBy('createdAt', 'desc')
+      .onSnapshot((querySnapshot) => {
+        const newTasks = [];
+        querySnapshot.forEach(doc => {
+          const task = doc.data();
+          task.id = doc.id;
+          newTasks.push(task);
+        });
+        setTasks(newTasks);
+      }, err => {
+        console.log(err);
+      })
+  },[]);
 
   const username = user?.username || auth?.currentUser?.displayName;
 
@@ -43,11 +60,13 @@ const Home = ({user}) => {
             <View style={styles.headerLeftSection}>
               <Text style={styles.greetingUser}>Hi {username}</Text>
               <Text style={styles.pendingTasks}>
-                10 tasks pending
+                {tasks && tasks.length || 0} {tasks.length === 1 ? 'task' : 'tasks'} pending
               </Text>
             </View>
             <View style={styles.headerRightSection}>
-              <View style={styles.profileImageContainer}></View>
+              <View style={styles.profileImageContainer}>
+                <FontAwesome name='user' style={styles.profileImageIcon} />
+              </View>
             </View>
           </View> 
           <View style={styles.searchContainer}>
@@ -56,7 +75,7 @@ const Home = ({user}) => {
               <TextInput placeholder='Search' style={styles.searchInput} />
             </View>
             <View style={styles.filter}>
-              <View style={styles.filterContainer}></View>
+              <View style={styles.filterContainer}><FontAwesome name='sort' style={styles.filterIcon} /></View>
             </View>
           </View>
           <View style={styles.onGoingTaskContainer}>
@@ -69,49 +88,74 @@ const Home = ({user}) => {
               </Pressable>
             </View>
             <View style={styles.tasksContianer}>
-              <View style={styles.taskCard}>
-                <View style={styles.cardHeader}>
-                  <View style={styles.cardTitle}>
-                    <Text style={styles.cardTitleText}>Wallet App Design</Text>
-                  </View>
-                  <View style={styles.dueIn}>
-                    <Text style={styles.dueInText}>6d</Text>
-                  </View>
-                </View>
-                <View style={styles.cardDesc}>
-                  <View style={styles.timing}>
-                    <Text style={styles.timeText}>2:30 PM - 6:00 PM</Text>
-                  </View>
-                </View>
-                <View style={styles.teamContainer}>
-                  <View style={styles.teamMember}></View>
-                  <View style={styles.options}>
-                    <View style={styles.editOption}>
-                      <FontAwesome name='edit' style={styles.editOptionIcon} />
+              {
+                tasks && tasks.length > 0 ? (
+                  tasks.map(task => (
+                    <View style={styles.taskCard} key={task.id}>
+                      <View style={styles.cardHeader}>
+                        <View style={styles.cardTitle}>
+                          <Text style={styles.cardTitleText}>{task.task}</Text>
+                        </View>
+                        <View style={styles.dueIn}>
+                          <Text style={styles.dueInText}>6d</Text>
+                        </View>
+                      </View>
+                      <View style={styles.cardDesc}>
+                        <View style={styles.timing}>
+                          <Text style={styles.timeText}>2:30 PM - 6:00 PM</Text>
+                        </View>
+                      </View>
+                      <View style={styles.teamContainer}>
+                        <View style={styles.teamMember}></View>
+                        <View style={styles.options}>
+                          <View style={styles.editOption}>
+                            <FontAwesome name='edit' style={styles.editOptionIcon} />
+                          </View>
+                          <View style={styles.starOption}>
+                            <FontAwesome name='trash' style={styles.editOptionIcon} />
+                          </View>
+                        </View>
+                      </View>
                     </View>
-                    <View style={styles.starOption}>
-                      <FontAwesome name='star' style={styles.starOptionIcon} />
-                    </View>
+                  ))
+                )
+                :
+                (
+                  <View style={styles.noOnGoingTasksContainer}>
+                    <Text style={styles.noOnGoingTaskText}>No ongoing tasks</Text>
                   </View>
-                </View>
-              </View>
+                )
+              }
             </View>
           </View>
+          
+          <View style={styles.endContainer}>
+
+          </View>
         </ScrollView>
-        <View style={styles.footer}>
+        {/* <TouchableOpacity style={styles.floatingCreateContainer}>
+              <View style={styles.floatingContainer}>
+                <View style={styles.createIconContainer}>
+                  <FontAwesome name='plus' style={styles.createTaskIcon} />
+                  <Ionicons name='create' style={styles.createTaskIcon} />
+                </View>
+                <Text style={styles.createTaskText}>Create Task</Text>
+              </View>
+        </TouchableOpacity> */}
+        {/* <View style={styles.footer}>
           <View style={styles.homeContainer}>
             <FontAwesome name='home' style={styles.homeIcon} />
           </View>
           <View style={styles.createContainer}>
-            <Pressable onPress={openModal}>
+            <TouchableOpacity onPress={openModal}>
               <FontAwesome name='plus' style={styles.plusIcon} />
-            </Pressable>
+            </TouchableOpacity>
           </View>
-          <View style={styles.profileContainer}>
+          <TouchableOpacity style={styles.profileContainer}>
             <FontAwesome name='user' style={styles.userIcon} />
-          </View>
-        </View>
-        <CreateBottomSheet visible={visible} closeModal={closeModal} setVisible={setVisible} />
+          </TouchableOpacity>
+        </View> */}
+        <CreateBottomSheet visible={visible} closeModal={closeModal} setVisible={setVisible} _translateY={_translateY} _lastOffset={_lastOffset} />
       </SafeAreaView>
     </GestureHandlerRootView>
   )
@@ -137,7 +181,7 @@ const styles = StyleSheet.create({
   },  
   innerContainer: {
     paddingHorizontal: 20,
-    paddingTop: 10
+    paddingTop: 10,
   },
   headerContainer: {
     flexDirection: "row",
@@ -156,8 +200,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     backgroundColor: 'white',
-    borderRadius: 40
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
+  profileImageIcon: {
+    fontSize: 20,
+    color: '#1c1c1ccc'
+  },  
   searchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -185,7 +235,13 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     backgroundColor: '#1c1c1ccc',
-    borderRadius: 45
+    borderRadius: 45,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  filterIcon: {
+    fontSize: 20,
+    color: 'white'
   },
   onGoingTaskContainer: {
 
@@ -309,6 +365,51 @@ const styles = StyleSheet.create({
   },
   createModal: {
     
+  },
+  endContainer: {
+    paddingBottom: 40
+  },
+  noOnGoingTasksContainer: {
+    padding: 20,
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    width: '100%',
+    marginTop: 20,
+    borderRadius: 6
+  },
+  noOnGoingTaskText: {
+    fontWeight: '700',
+    color: '#aaa'
+  },
+  floatingCreateContainer: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20
+  },
+  floatingContainer: {
+    backgroundColor: '#1c1c1ccc',
+    borderRadius: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 50,
+    height: 50,
+  },
+  createTaskText: {
+    color: 'white',
+    fontWeight: '700',
+  },
+  createIconContainer: {
+    // marginRight: 5,
+    position: 'relative'
+  },
+  createTaskIcon: {
+    color: 'white',
+    fontSize: 20,
+    position: 'absolute',
+    top: -12,
+    left: -8
   }
 
 })
