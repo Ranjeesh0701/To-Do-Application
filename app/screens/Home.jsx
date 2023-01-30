@@ -95,7 +95,7 @@ const Home = ({ navigation, user }) => {
                     <View style={styles.taskCard} key={task.id}>
                       <View style={styles.cardHeader}>
                         <View style={styles.cardTitle}>
-                          <Text style={styles.cardTitleText}>{task.task}</Text>
+                          <Text style={styles.cardTitleText}>{task.title}</Text>
                         </View>
                         <View style={styles.dueIn}>
                           <Text style={styles.dueInText}>6d</Text>
