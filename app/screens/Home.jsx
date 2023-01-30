@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal, Animated, Platform, TouchableOpacity } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal, Animated, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { auth, db } from '../config/firebase'
 import { SafeAreaView, withSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,10 +44,16 @@ const Home = ({ navigation, user }) => {
       }, err => {
         console.log(err);
       })
-      console.log(tasks);
   }, []);
 
   const username = user?.username || auth?.currentUser?.displayName;
+
+  const navigateToTaskView = (_taskId) => {
+    navigation.navigate('TaskView', {
+      _taskId: _taskId
+    });
+  }
+
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -92,7 +98,7 @@ const Home = ({ navigation, user }) => {
               {
                 tasks && tasks.length > 0 ? (
                   tasks.map(task => (
-                    <View style={styles.taskCard} key={task.id}>
+                    <Pressable style={styles.taskCard} key={task.id} onPress={() => navigateToTaskView(task.id)}>
                       <View style={styles.cardHeader}>
                         <View style={styles.cardTitle}>
                           <Text style={styles.cardTitleText}>{task.title}</Text>
@@ -109,15 +115,15 @@ const Home = ({ navigation, user }) => {
                       <View style={styles.teamContainer}>
                         <View style={styles.teamMember}></View>
                         <View style={styles.options}>
-                          <View style={styles.editOption}>
+                          {/* <View style={styles.editOption}>
                             <FontAwesome name='edit' style={styles.editOptionIcon} />
-                          </View>
+                          </View> */}
                           <View style={styles.starOption}>
                             <FontAwesome name='trash' style={styles.editOptionIcon} />
                           </View>
                         </View>
                       </View>
-                    </View>
+                    </Pressable>
                   ))
                 )
                   :

@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import TabNavigator from './navigator/TabNavigator';
 import { PortalProvider } from '@gorhom/portal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import TaskView from './screens/TaskView';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,19 +33,25 @@ export default function App() {
     <PortalProvider>
       <GestureHandlerRootView style={{ flex: 1 }}><NavigationContainer>
 
-        {
-          !user && (
-            <Stack.Navigator screenOptions={{ animation: 'none' }}>
-              <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-              <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
-            </Stack.Navigator>
-          )
-        }
-        {
-          user && (
-            <TabNavigator />
-          )
-        }
+        <Stack.Navigator screenOptions={{ animation: 'none' }}>
+          {
+            !user && (
+              <>
+                <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+                <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
+              </>
+            )
+          }
+          {
+            user && (
+              <>
+                <Stack.Screen name="HomeContainer" component={TabNavigator} options={{ headerShown: false }} />
+                <Stack.Screen name="TaskView" component={TaskView} options={{ headerShown: false }} />
+              </>
+            )
+          }
+        </Stack.Navigator>
+
       </NavigationContainer></GestureHandlerRootView>
     </PortalProvider>
   );
