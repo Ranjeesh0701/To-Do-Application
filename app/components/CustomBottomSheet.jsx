@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { auth, db } from '../config/firebase';
 import { Portal } from '@gorhom/portal';
+import Task from '../model/Task';
 
 const CustomBottomSheet = (props) => {
 
@@ -60,23 +61,14 @@ const CustomBottomSheet = (props) => {
     const taskRef = db.collection('tasks');
     const userId = auth.currentUser.uid;
 
-
-
     const createTask = () => {
         if (task && task.length > 0 && userId) {
             const timestamp = new Date();
             if (userId) {
                 members.push(userId);
             }
-            const _data = {
-                task: task,
-                members: members,
-                time: time,
-                due_by: due,
-                tags: tags,
-                userId: userId,
-                createdAt: timestamp,
-            }
+            const _data = new Task({_title: task, _members: members, _time: time, _dueBy: due, _tags: tags, _createdBy: userId, _createdAt: timestamp, _updatedAt: timestamp}).getDetails();
+
             taskRef
                 .add(_data)
                 .then(_doc => {
@@ -86,7 +78,6 @@ const CustomBottomSheet = (props) => {
                     setTags({});
                     setTime('');
                     setDue('');
-                    setVisible(false);
                     Alert.alert('Task created successfully.');
                 })
                 .catch((err) => {

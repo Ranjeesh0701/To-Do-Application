@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import { auth, db } from '../config/firebase';
+import User from '../model/User';
 
 const Register = ({navigation}) => {
 
@@ -15,21 +16,17 @@ const Register = ({navigation}) => {
             auth.currentUser.updateProfile({
               displayName: username
             });
-            const uid = auth.currentUser.uid;
-            const user = {
-              id: uid,
-              email,
-              username
-            }
+            const _uid = auth.currentUser.uid;
+            const _user = new User(_uid, email, username)._getDetails();
             const usersRef = db.collection('users');
-            usersRef.doc(uid).set(user).then(() => {
-              navigation.navigate('Home', {user});
+            usersRef.doc(_uid).set(_user).then(() => {
+              // navigation.navigate('Home', {_user});
             })
             .catch((error) => {
               Alert.alert('Error', 'User creation failed');
             })
         }).catch((error) => {
-          Alert.alert('Error', 'User creation failed')
+          Alert.alert('Error', 'User already exists')
         })
     }
 
