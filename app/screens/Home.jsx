@@ -31,7 +31,7 @@ const Home = ({ navigation, user }) => {
   // getting all the tasks from db
   useEffect(() => {
     taskRef
-      .where("userId", "==", userId)
+      .where("createdBy", "==", userId)
       .orderBy('createdAt', 'desc')
       .onSnapshot((querySnapshot) => {
         const newTasks = [];
@@ -44,6 +44,7 @@ const Home = ({ navigation, user }) => {
       }, err => {
         console.log(err);
       })
+      console.log(tasks);
   }, []);
 
   const username = user?.username || auth?.currentUser?.displayName;
