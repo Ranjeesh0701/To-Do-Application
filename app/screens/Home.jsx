@@ -5,13 +5,13 @@ import { SafeAreaView, withSafeAreaInsets } from 'react-native-safe-area-context
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import CreateBottomSheet from '../components/CreateBottomSheet';
-import {Ionicons} from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import CustomBottomSheet from '../components/CustomBottomSheet';
 
-const Home = ({navigation, user}) => {
+const Home = ({ navigation, user }) => {
 
-  var _translateY = new Animated.Value(0); 
-  var _lastOffset = {y: 0};
+  var _translateY = new Animated.Value(0);
+  var _lastOffset = { y: 0 };
 
   const [visible, setVisible] = useState(false);
 
@@ -44,7 +44,7 @@ const Home = ({navigation, user}) => {
       }, err => {
         console.log(err);
       })
-  },[]);
+  }, []);
 
   const username = user?.username || auth?.currentUser?.displayName;
 
@@ -68,7 +68,7 @@ const Home = ({navigation, user}) => {
                 <FontAwesome name='user' style={styles.profileImageIcon} />
               </View>
             </View>
-          </View> 
+          </View>
           <View style={styles.searchContainer}>
             <View style={styles.searchBox}>
               <FontAwesome name='search' style={styles.searchIcon} />
@@ -119,28 +119,26 @@ const Home = ({navigation, user}) => {
                     </View>
                   ))
                 )
-                :
-                (
-                  <View style={styles.noOnGoingTasksContainer}>
-                    <Text style={styles.noOnGoingTaskText}>No ongoing tasks</Text>
-                  </View>
-                )
+                  :
+                  (
+                    <View style={styles.noOnGoingTasksContainer}>
+                      <Text style={styles.noOnGoingTaskText}>No ongoing tasks</Text>
+                    </View>
+                  )
               }
             </View>
           </View>
-          
+
           <View style={styles.endContainer}>
 
           </View>
         </ScrollView>
-        {/* <TouchableOpacity style={styles.floatingCreateContainer}>
-              <View style={styles.floatingContainer}>
-                <View style={styles.createIconContainer}>
-                  <FontAwesome name='plus' style={styles.createTaskIcon} />
-                  <Ionicons name='create' style={styles.createTaskIcon} />
-                </View>
-                <Text style={styles.createTaskText}>Create Task</Text>
-              </View>
+        {/* <TouchableOpacity style={styles.floatingCreateContainer} onPress={openModal}>
+          <View style={styles.floatingContainer}>
+            <View style={styles.createIconContainer}>
+              <Ionicons name='create' style={styles.createTaskIcon} />
+            </View>
+          </View>
         </TouchableOpacity> */}
         {/* <View style={styles.footer}>
           <View style={styles.homeContainer}>
@@ -155,7 +153,7 @@ const Home = ({navigation, user}) => {
             <FontAwesome name='user' style={styles.userIcon} />
           </TouchableOpacity>
         </View> */}
-        <CreateBottomSheet visible={visible} closeModal={closeModal} setVisible={setVisible} _translateY={_translateY} _lastOffset={_lastOffset} />
+        {/* <CustomBottomSheet visible={visible} closeModal={closeModal} setVisible={setVisible} _translateY={_translateY} _lastOffset={_lastOffset} /> */}
       </SafeAreaView>
     </GestureHandlerRootView>
   )
@@ -166,7 +164,7 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },  
+  },
   overlay: {
     position: 'absolute',
     flex: 1,
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
   },
   safeContainer: {
     flex: 1,
-  },  
+  },
   innerContainer: {
     paddingHorizontal: 20,
     paddingTop: 10,
@@ -207,7 +205,7 @@ const styles = StyleSheet.create({
   profileImageIcon: {
     fontSize: 20,
     color: '#1c1c1ccc'
-  },  
+  },
   searchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -266,7 +264,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tasksContianer: {
-    
+
   },
   taskCard: {
     backgroundColor: 'white',
@@ -331,7 +329,7 @@ const styles = StyleSheet.create({
   },
   starOption: {
     paddingLeft: 15
-  },  
+  },
   starOptionIcon: {
     color: 'white',
     fontSize: 20
@@ -364,7 +362,7 @@ const styles = StyleSheet.create({
     color: '#1c1c1ccc'
   },
   createModal: {
-    
+
   },
   endContainer: {
     paddingBottom: 40

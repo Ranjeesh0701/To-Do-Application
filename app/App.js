@@ -10,6 +10,8 @@ import Profile from './screens/Profile';
 import { auth } from './config/firebase';
 import { useEffect, useState } from 'react';
 import TabNavigator from './navigator/TabNavigator';
+import { PortalProvider } from '@gorhom/portal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,9 +19,9 @@ export default function App() {
   const [user, setUser] = useState(auth.currentUser);
 
   useEffect(() => {
-    if(!user) {
+    if (!user) {
       auth.onAuthStateChanged((user) => {
-        if(user) {
+        if (user) {
           setUser(user);
         }
       })
@@ -27,13 +29,14 @@ export default function App() {
   }, [])
 
   return (
-    <NavigationContainer>
-        
+    <PortalProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}><NavigationContainer>
+
         {
           !user && (
-            <Stack.Navigator  screenOptions={{ animation: 'none' }}>
-              <Stack.Screen name="Login" component={Login} options={{headerShown: false}} />
-              <Stack.Screen name="Register" component={Register} options={{headerShown: false}} />
+            <Stack.Navigator screenOptions={{ animation: 'none' }}>
+              <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+              <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
             </Stack.Navigator>
           )
         }
@@ -42,6 +45,7 @@ export default function App() {
             <TabNavigator />
           )
         }
-    </NavigationContainer>
+      </NavigationContainer></GestureHandlerRootView>
+    </PortalProvider>
   );
 }
