@@ -20,6 +20,7 @@ class Task {
             time: this._time,
             dueBy: this._dueBy,
             tags: this._tags,
+            state: this._state,
             createdBy: this._createdBy,
             createdAt: this._createdAt,
             updatedAt: this._updatedAt

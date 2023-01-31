@@ -13,6 +13,7 @@ import TabNavigator from './navigator/TabNavigator';
 import { PortalProvider } from '@gorhom/portal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TaskView from './screens/TaskView';
+import ProfileView from './screens/ProfileView';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,7 @@ export default function App() {
               <>
                 <Stack.Screen name="HomeContainer" component={TabNavigator} options={{ headerShown: false }} />
                 <Stack.Screen name="TaskView" component={TaskView} options={{ headerShown: false }} />
+                <Stack.Screen name="ProfileView" component={ProfileView} options={{ headerShown: false }} />
               </>
             )
           }

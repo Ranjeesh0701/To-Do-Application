@@ -1,10 +1,23 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { auth, db } from '../config/firebase';
 
 const Profile = () => {
+    const userId = auth.currentUser.uid;
+    const [currentUser, setCurrentUser] = useState(null);
+
+    useEffect(() => {
+        db.collection('users').where("id", '==', userId).onSnapshot((querySnapshot) => {
+            querySnapshot.forEach(doc => {
+                const user = doc.data();
+                setCurrentUser(user);
+            })
+        })
+    }, [])
+
   return (
     <View style={styles.container}>
         <SafeAreaView style={styles.safeContainer}>
@@ -17,18 +30,18 @@ const Profile = () => {
                     <View>
                         <View style={styles.followerContainer}>
                             <View style={styles.following}>
-                                <Text style={styles.followingCount}>192</Text>
+                                <Text style={styles.followingCount}>{currentUser ? currentUser.following : 0}</Text>
                                 <Text style={styles.followingText}>Following</Text>
                             </View>
                             <View style={styles.followers}>
-                                <Text style={styles.followersCount}>200</Text>
+                                <Text style={styles.followersCount}>{currentUser ? currentUser.followers : 0}</Text>
                                 <Text style={styles.followersText}>Followers</Text>
                             </View>
                         </View>
                     </View>
                 </View>
                 <View style={styles.bio}>
-                    <Text style={styles.name}>Ranjeesh R</Text>
+                    <Text style={styles.name}>{currentUser ? currentUser.username : 'Loading...'}</Text>
                 </View>
                 <View style={styles.options}>
                     <TouchableOpacity style={styles.editProfileContainer}>    

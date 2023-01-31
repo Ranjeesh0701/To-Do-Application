@@ -24,13 +24,6 @@ const CustomBottomSheet = (props) => {
         setVisible(true);
     }
 
-    const [date, setDate] = useState(new Date());
-
-    const onChangeDate = (event, selectedDate) => {
-        const currentDate = date || selectedDate;
-        setDate(currentDate);
-    }
-
     const _panGestureEvent = Animated.event([{ nativeEvent: { translationY: props._translateY } }], {
         useNativeDriver: true
     })
@@ -50,9 +43,9 @@ const CustomBottomSheet = (props) => {
 
     const [task, setTask] = useState("");
 
-    const [time, setTime] = useState("");
+    const [time, setTime] = useState(new Date());
 
-    const [due, setDue] = useState("");
+    const [due, setDue] = useState(new Date());
 
     const [tags, setTags] = useState([]);
 
@@ -60,6 +53,17 @@ const CustomBottomSheet = (props) => {
 
     const taskRef = db.collection('tasks');
     const userId = auth.currentUser.uid;
+
+    const onChangeTime = (event, selectedTime) => {
+        console.log(selectedTime);
+        const currentTime = selectedTime || time;
+        setTime(currentTime);
+    }
+
+    const onChangeDate = (event, selectedDate) => {
+        const currentDate = selectedDate || date;
+        setDue(currentDate);
+    }
 
     const createTask = () => {
         if (task && task.length > 0 && userId) {
@@ -76,8 +80,6 @@ const CustomBottomSheet = (props) => {
                     setMembers([]);
                     members.push(userId);
                     setTags({});
-                    setTime('');
-                    setDue('');
                     Alert.alert('Task created successfully.');
                 })
                 .catch((err) => {
@@ -87,12 +89,23 @@ const CustomBottomSheet = (props) => {
     }
 
     const openBottomSheet = () => {
+        setTime(new Date());
+        setDue(new Date());
         Animated.timing(props._translateY, {
             toValue: -SCREEN_HEIGHT + 120,
             duration: 600,
             useNativeDriver: true
         }).start()
         props._lastOffset.y = -SCREEN_HEIGHT + 120;
+    }
+
+    const closeBottomSheet = () => {
+        Animated.timing(props._translateY, {
+            toValue: SCREEN_HEIGHT,
+            duration: 600,
+            useNativeDriver: true
+        }).start()
+        props._lastOffset.y = SCREEN_HEIGHT;
     }
 
 
@@ -118,11 +131,11 @@ const CustomBottomSheet = (props) => {
                                     <DatePicker
                                         testID='dateTimePicker'
                                         accentColor='#1c1c1ccc'
-                                        value={date}
+                                        value={time}
                                         mode='time'
-                                        is24Hour={true}
+                                        is24Hour={false}
                                         display='default'
-                                        onChange={onChangeDate}
+                                        onChange={onChangeTime}
                                         style={{ alignSelf: 'left', marginTop: 10 }}
                                     />
                                 </View>
@@ -132,8 +145,9 @@ const CustomBottomSheet = (props) => {
                                     <DatePicker
                                         testID='dateTimePicker'
                                         accentColor='#1c1c1ccc'
-                                        value={date}
+                                        value={due}
                                         mode='date'
+                                        minimumDate={new Date()}
                                         is24Hour={true}
                                         display='default'
                                         onChange={onChangeDate}
@@ -164,7 +178,10 @@ const CustomBottomSheet = (props) => {
                                 </View>
                             </View>
                             <View style={styles.createBtnContainer}>
-                                <Pressable onPress={createTask}>
+                                <Pressable onPress={closeBottomSheet} style={[styles.customBtn]}>
+                                    <View style={styles.cancelBtn}><Text style={styles.cancelText}>Cancel</Text></View>
+                                </Pressable>
+                                <Pressable onPress={createTask} style={styles.customBtn}>
                                     <View style={styles.createBtn}><Text style={styles.createText}>Create Task</Text></View>
                                 </Pressable>
                             </View>
@@ -286,17 +303,42 @@ const styles = StyleSheet.create({
         marginLeft: 5,
     },
     createBtnContainer: {
-        paddingTop: 20
+        paddingTop: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    customBtn: {
+        flex: 0.48
+    },  
+    cancelBtn: {
+        borderTopColor: 'gray',
+        borderBottomColor: 'gray',  
+        borderRightColor: 'gray',
+        borderLeftColor: 'gray',
+        borderWidth: 1,
+        padding: 13,
+        borderRadius: 15,
     },
     createBtn: {
+        borderWidth: 1,
+        borderTopColor: 'gray',
+        borderBottomColor: 'gray',  
+        borderRightColor: 'gray',
+        borderLeftColor: 'gray',
         backgroundColor: '#1c1c1ccc',
-        padding: 15,
-        borderRadius: 20,
+        padding: 13,
+        borderRadius: 15,
     },
     createText: {
-        fontWeight: '700',
+        fontWeight: '600',
         color: 'white',
         textAlign: 'center',
-        fontSize: 17
+        fontSize: 16
+    },
+    cancelText: {
+        fontWeight: '600',
+        color: '#1c1c1ccc',
+        textAlign: 'center',
+        fontSize: 16
     }
 })

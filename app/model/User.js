@@ -1,8 +1,9 @@
 class User {
-    constructor(_id, _email, _username, _followers, _following, _teams, _createdAt, _updatedAt) {
+    constructor(_id, _email, _username, _desc, _followers, _following, _teams, _createdAt, _updatedAt) {
         this._id = _id;
         this._email = _email;
         this._username = _username;
+        this._desc = _desc || '';
         this._followers = _followers || 0,
         this._following = _following || 0,
         this._teams = _teams || [],
@@ -15,6 +16,7 @@ class User {
             id: this._id,
             email: this._email,
             username: this._username,
+            desc: this._desc,
             followers: this._followers,
             following: this._following,
             teams: this._teams,

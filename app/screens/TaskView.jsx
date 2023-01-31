@@ -18,6 +18,10 @@ const TaskView = (props) => {
 
   const [currentTask, setCurrentTask] = useState(null);
 
+  const [time, setTime] = useState(new Date());
+  const [date, setDate] = useState(new Date());
+  
+
   useEffect(() => {
     _taskRef
       .where("createdBy", "==", userId)
@@ -26,6 +30,14 @@ const TaskView = (props) => {
           const task = doc.data();
           if(doc.id === _taskId) {
             setCurrentTask(task);
+            const fireBaseTime = new Date(
+              doc.data().time.seconds * 1000 + doc.data().time.nanoseconds / 1000000
+            );
+            setTime(fireBaseTime);
+            const firebaseDate = new Date(
+              doc.data().dueBy.seconds * 1000 + doc.data().dueBy.nanoseconds / 1000000
+            )
+            setDate(firebaseDate);
           }
         });
       }, err => {
@@ -33,14 +45,18 @@ const TaskView = (props) => {
       })
   }, [])
 
-  const [date, setDate] = useState(new Date());
-
   const [editMode, setEditMode] = useState(false);
+
+  const onChangeTime = (event, selectedTime) => {
+    const currentTime = date || selectedTime;
+    setDate(currentTime);
+  }
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = date || selectedDate;
     setDate(currentDate);
   }
+  
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -79,11 +95,11 @@ const TaskView = (props) => {
               <DatePicker
                 testID='dateTimePicker'
                 accentColor='#1c1c1ccc'
-                value={date}
                 mode='time'
+                value={time || new Date()}
                 is24Hour={true}
                 display='default'
-                onChange={onChangeDate}
+                onChange={onChangeTime}
                 disabled={!editMode}
                 style={{ alignSelf: 'left', marginTop: 10 }}
               />
@@ -94,7 +110,7 @@ const TaskView = (props) => {
               <DatePicker
                 testID='dateTimePicker'
                 accentColor='#1c1c1ccc'
-                value={date}
+                value={date || new Date()}
                 mode='date'
                 is24Hour={true}
                 display='default'
@@ -146,7 +162,6 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     paddingHorizontal: 20,
-    paddingTop: 10,
     flex: 1
   },
   header: {
@@ -154,7 +169,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10
+    paddingTop: 10,
+    paddingBottom: 10
   },
   backIcon: {
     fontSize: 24
