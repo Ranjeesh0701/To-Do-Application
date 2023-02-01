@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
@@ -9,6 +9,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import DatePicker from '@react-native-community/datetimepicker';
 import { auth, db } from '../config/firebase'
 import Task from '../model/Task'
+import ModalDropdown from 'react-native-modal-dropdown';
 
 const TaskView = (props) => {
 
@@ -20,7 +21,8 @@ const TaskView = (props) => {
 
   const [time, setTime] = useState(new Date());
   const [date, setDate] = useState(new Date());
-  
+
+  const [taskObj, setTaskObj] = useState(null);
 
   useEffect(() => {
     _taskRef
@@ -30,6 +32,7 @@ const TaskView = (props) => {
           const task = doc.data();
           if(doc.id === _taskId) {
             setCurrentTask(task);
+            setTaskObj(new Task({_id: _taskId, _title: task.title, _desc: task.desc, _dueBy: task.dueBy, _createdBy: task.createdBy, _time: task.time, _createdAt: task.createdAt, _updatedAt: task._updatedAt, _members: task._members, _tags: task._tags}));
             const fireBaseTime = new Date(
               doc.data().time.seconds * 1000 + doc.data().time.nanoseconds / 1000000
             );
@@ -55,6 +58,35 @@ const TaskView = (props) => {
   const onChangeDate = (event, selectedDate) => {
     const currentDate = date || selectedDate;
     setDate(currentDate);
+  }
+
+  const handleTitleChange = (value) => {
+    currentTask.title = value;
+    setCurrentTask({...currentTask});
+  } 
+
+  const updateTask = () => {
+    if(taskObj) {
+      setEditMode(false);
+      if(taskObj._title != currentTask.title) {
+        taskObj.setTitle(currentTask.title);
+      } 
+      const data = taskObj.getDetails();
+      
+      console.log(data.id);
+      db.collection('tasks').doc(data.id).update('title', taskObj._title).then(() => {
+        Alert.alert('Task updated successfully');
+      }).catch(err => {
+        console.log(err.message);
+        Alert.alert('Error', 'Something went wrong');
+      })
+
+    }
+    
+  }  
+
+  const completeTask = () => {
+    db.collection('tasks')
   }
   
 
@@ -86,7 +118,7 @@ const TaskView = (props) => {
       <ScrollView style={styles.innerContainer}> 
         <View style={styles.container}>
           <View>
-            <TextInput placeholder='What do you need to do?' style={styles.taskInput} editable={editMode} value={currentTask && currentTask.title} />
+            <TextInput placeholder='What do you need to do?' style={[styles.taskInput, {color: editMode ? 'black': '#ccc'}]} editable={editMode} value={currentTask && currentTask.title} onChangeText={value => handleTitleChange(value)} />
           </View>
           <View style={styles.timingContainer}>
             <View style={[styles.timingSection, styles.leftSection]}>
@@ -143,7 +175,15 @@ const TaskView = (props) => {
             </View>
           </View>
           <View style={styles.createBtnContainer}>
-            <TouchableOpacity disabled={!editMode}>
+            <Text style={styles.inputHeader}>Status</Text>
+            {/* <TouchableOpacity disabled={!editMode} onPress={completeTask}> */}
+            <View style={styles.statusBarContainer}>
+              <ModalDropdown disabled={!editMode} options={['Not yet started', 'In Progress', 'Completed']} textStyle={{paddingHorizontal: 10, color: editMode ? '#1c1c1ccc': '#ccc', fontWeight: '700', fontSize: 13}} style={{backgroundColor: 'white', paddingVertical: 15, borderRadius: 10, width: '100%'}} dropdownStyle={{width: Dimensions.get('window').width - 40, borderRadius: 5, marginTop: 20, height: 35 * 3}} dropdownTextStyle={{fontSize: 13}} />
+            </View>
+            {/* </TouchableOpacity> */}
+          </View>
+          <View style={styles.createBtnContainer}>
+            <TouchableOpacity disabled={!editMode} onPress={updateTask}>
               <View style={[styles.createBtn, {backgroundColor: !editMode ? '#ccc' : '#1c1c1ccc'}]}><Text style={[styles.createText]}>Update Task</Text></View>
             </TouchableOpacity>
           </View>
@@ -287,5 +327,11 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     fontSize: 17
+  },
+  statusBarContainer: {
+    paddingTop: 10
+  },
+  statusBar: {
+
   }
 });

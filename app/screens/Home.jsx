@@ -118,9 +118,9 @@ const Home = ({ navigation, user }) => {
                           {/* <View style={styles.editOption}>
                             <FontAwesome name='edit' style={styles.editOptionIcon} />
                           </View> */}
-                          <View style={styles.starOption}>
+                          {/* <View style={styles.starOption}>
                             <FontAwesome name='trash' style={styles.editOptionIcon} />
-                          </View>
+                          </View> */}
                         </View>
                       </View>
                     </Pressable>

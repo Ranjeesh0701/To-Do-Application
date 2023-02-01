@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, Text, useAnimatedValue, View, Animated, TextInput, Alert, Platform, PanResponder } from 'react-native'
+import { Dimensions, StyleSheet, Text, useAnimatedValue, View, Animated, TextInput, Alert, Platform, PanResponder, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react';
 import DatePicker from '@react-native-community/datetimepicker';
 
@@ -76,11 +76,17 @@ const CustomBottomSheet = (props) => {
             taskRef
                 .add(_data)
                 .then(_doc => {
-                    setTask('');
-                    setMembers([]);
-                    members.push(userId);
-                    setTags({});
-                    Alert.alert('Task created successfully.');
+                    db.collection('tasks').doc(_doc.id).update('id', _doc.id).then(() => {
+                        setTask('');
+                        setMembers([]);
+                        members.push(userId);
+                        setTags({});
+                        Alert.alert('Task created successfully.');
+                    })
+                    .catch((err) => {
+                        Alert.alert('Something went wrong.');
+                    })
+                    
                 })
                 .catch((err) => {
                     Alert.alert('Something went wrong.');
@@ -158,12 +164,35 @@ const CustomBottomSheet = (props) => {
                             <View style={styles.tagsContainer}>
                                 <Text style={styles.addTags}>Add tags</Text>
                                 <View style={styles.allTagsContainer}>
-                                    <Pressable style={styles.createTagContainer}>
-                                        <View style={styles.createTag}>
-                                            <FontAwesome style={styles.addIcon} name='plus' />
-                                            <Text style={styles.addTagText}>Add tag</Text>
+                                    {/* <ScrollView horizontal={true} style={styles.tagContainer}>
+                                        <View style={styles.tag}>
+                                            <View style={styles.name}>
+                                                <Text style={styles.nameText}>Hello</Text>
+                                            </View>
+                                            <View style={styles.tagDeleteContainer}>
+                                                <Ionicons style={styles.tagDeleteIcon} name='close' />
+                                            </View> 
                                         </View>
-                                    </Pressable>
+                                        <View style={[styles.tag, {marginLeft: 10}]}>
+                                            <View style={styles.name}>
+                                                <Text style={styles.nameText}>Hello</Text>
+                                            </View>
+                                            <View style={styles.tagDeleteContainer}>
+                                                <Ionicons style={styles.tagDeleteIcon} name='close' />
+                                            </View> 
+                                        </View>
+                                    </ScrollView> */}
+                                    <View style={styles.createTagContainer}>
+                                        <View style={styles.createTagInputContainer}>
+                                            <TextInput style={styles.createTagInput} placeholder='Enter tag' />
+                                        </View>
+                                        <Pressable style={styles.createTagBtnContainer}>
+                                            <View style={styles.createTag}>
+                                                <FontAwesome style={styles.addIcon} name='plus' />
+                                                <Text style={styles.addTagText}>Add tag</Text>
+                                            </View>
+                                        </Pressable>
+                                    </View>
                                 </View>
                             </View>
                             <View style={styles.inviteContainer}>
@@ -220,6 +249,25 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingBottom: 100
     },
+    allTagsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    tag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1c1c1ccc',
+        borderRadius: 30,
+        padding: 10
+    },  
+    nameText: {
+        color: 'white',
+        fontWeight: '600'
+    },  
+    tagDeleteIcon: {
+        color: 'white',
+        paddingLeft: 4
+    },  
     taskInput: {
         width: '100%',
         fontSize: 17,
@@ -269,6 +317,17 @@ const styles = StyleSheet.create({
     },
     addIcon: {
         color: '#bbb'
+    },
+    createTagContainer: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    createTagInput: {
+        backgroundColor:'whitesmoke',
+        padding: 10,
+        borderRadius: 20,
+        marginRight: 10,
+        width: 70
     },
     addTagText: {
         paddingLeft: 5,

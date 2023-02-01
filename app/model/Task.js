@@ -1,5 +1,6 @@
 class Task {
-    constructor({_title, _desc, _members, _time, _dueBy, _tags, _createdBy, _state, _createdAt, _updatedAt}) {
+    constructor({_id, _title, _desc, _members, _time, _dueBy, _tags, _createdBy, _state, _createdAt, _updatedAt}) {
+        this._id = _id || null;
         this._title = _title;
         this._desc = _desc || '';
         this._members = _members || [];
@@ -12,8 +13,13 @@ class Task {
         this._updatedAt = _updatedAt || new Date();
     }
 
+    setTitle(_title) {
+        this._title = _title;
+    }
+
     getDetails() {
         return {
+            id: this._id,
             title: this._title,
             desc: this._desc,
             members: this._members,
