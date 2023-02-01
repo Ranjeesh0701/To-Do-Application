@@ -6,7 +6,7 @@ class FollowData {
         this._updatedAt = _updatedAt || new Date();
     }
 
-    getFollowData() {
+    _getFollowData() {
         return {
             follower: this._follower,
             following: this._following,
@@ -15,3 +15,5 @@ class FollowData {
         }
     }
 }
+
+export default FollowData;

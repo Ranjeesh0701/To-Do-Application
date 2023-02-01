@@ -18,4 +18,6 @@ const app = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : fir
 const db = app.firestore();
 const auth = app.auth();
 
-export {db, auth};
+const FieldValue = firebase.firestore.FieldValue;
+
+export {db, auth, FieldValue};

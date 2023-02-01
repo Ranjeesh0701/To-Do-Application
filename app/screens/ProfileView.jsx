@@ -1,12 +1,73 @@
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
+import { auth, db, FieldValue } from '../config/firebase';
+import FollowData from '../model/FollowData';
 
 const ProfileView = (props) => {
-    const _profile = props?.route?.params?._profile;
+    const _userId = auth.currentUser.uid;
+    const [_profile, setProfile] = useState(props?.route?.params?._profile);
+    console.log(_profile);
+    const [loading, setLoading] = useState(false);
+    const [isFollowing, setIsFollowing] = useState(false);
+
+    const followUser = () => {
+
+        const followObj = new FollowData({ _follower: _profile.id, _following: _userId })._getFollowData();
+
+        setLoading(true);
+
+        db.collection('followData').doc(_userId).set(followObj).then(() => {
+
+            db.collection('users').doc(_userId).update({
+                following: FieldValue.increment(1)
+            }).then(() => {
+
+            })
+                .catch((err) => {
+                    Alert.alert('Error', 'Something went wrong.');
+                })
+
+            db.collection('users').doc(_profile.id).update({
+                followers: FieldValue.increment(1)
+            }).then(() => {
+                db.collection('users').where()
+            })
+                .catch((err) => {
+                    Alert.alert('Error', 'Something went wrong.');
+                })
+
+        }).catch((error) => {
+            Alert.alert('Error', 'Something went wrong.');
+        })
+        setLoading(false);
+
+    }
+
+    const unfollowUser = () => {
+
+    }
+
+    useEffect(() => {
+        db.collection('users').where('id', '==', _profile.id).onSnapshot(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                setProfile(data);
+            })
+            console.log('Hello 1');
+        })
+        db.collection('followData').where('following', '==', _userId).onSnapshot(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                if(data.follower === _profile.id) {
+                    setIsFollowing(true);
+                }
+            })
+        })
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -44,8 +105,26 @@ const ProfileView = (props) => {
                         <Text style={styles.name}>{_profile.username}</Text>
                     </View>
                     <View style={styles.options}>
-                        <TouchableOpacity style={styles.followContainer}>
-                            <Text style={styles.followText}>Follow</Text>
+                        <TouchableOpacity style={styles.followContainer} onPress={!isFollowing ? followUser : unfollowUser}>
+                            {
+                                loading ? (
+                                    <ActivityIndicator color='white' />
+                                )
+                                    :
+                                    (
+                                        <>
+                                            {
+                                                isFollowing ? (
+                                                    <Text style={styles.followText}>Following</Text>
+                                                )
+                                                :
+                                                (
+                                                    <Text style={styles.followText}>Follow</Text>
+                                                )
+                                            }
+                                        </>
+                                    )
+                            }
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.messageContainer}>
                             <Text style={styles.messageText}>Message</Text>
