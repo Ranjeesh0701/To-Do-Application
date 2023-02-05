@@ -36,33 +36,24 @@ const ProfileView = (props) => {
                     const notificationRef = db.collection('notifications');
                     const notificationId = notificationRef.doc().id;
                     var notificationObj = new Notification({ _id: notificationId, _type: constants().NOTIFICATION.STARTED_FOLLOWING, _notifyTo: notifyTo, _createdBy: _userId }).getNotification();
-                    console.log(notificationObj);
                     notificationRef.doc(notificationId).set(notificationObj).then(() => {
-                        console.log('hello');
                     }).catch((err) => {
-                        console.log('err1', err);
                         Alert.alert('Notification error');
                     })
 
 
                 })
                     .catch((err) => {
-                        console.log('err2', err);
-
                         Alert.alert('Error', 'Something went wrong.');
                     })
 
 
             })
                 .catch((err) => {
-                    console.log('err3', err);
-
                     Alert.alert('Error', 'Something went wrong.');
                 })
 
         }).catch((error) => {
-            console.log('err4', error);
-
             Alert.alert('Error', 'Something went wrong.');
         })
         setLoading(false);
