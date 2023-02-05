@@ -20,15 +20,16 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const [user, setUser] = useState(auth.currentUser);
 
-  useEffect(() => {
-    if (!user) {
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          setUser(user);
-        }
-      })
+  // useEffect(() => {
+  //   if (!user) {
+  //     console.log('hello')
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      setUser(user);
     }
-  }, [])
+  })
+  // }
+  // }, [])
 
   return (
     <PortalProvider>

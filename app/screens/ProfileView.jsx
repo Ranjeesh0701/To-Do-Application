@@ -6,13 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
 import { auth, db, FieldValue } from '../config/firebase';
 import FollowData from '../model/FollowData';
+import Notification from '../model/Notification';
+import { constants } from '../common-util/constants';
 
 const ProfileView = (props) => {
     const _userId = auth.currentUser.uid;
     const [_profile, setProfile] = useState(props?.route?.params?._profile);
-    console.log(_profile);
     const [loading, setLoading] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
+
+    const [notifyTo, setNotifyTo] = useState([]);
 
     const followUser = () => {
 
@@ -25,22 +28,41 @@ const ProfileView = (props) => {
             db.collection('users').doc(_userId).update({
                 following: FieldValue.increment(1)
             }).then(() => {
+                db.collection('users').doc(_profile.id).update({
+                    followers: FieldValue.increment(1)
+                }).then(() => {
+                    notifyTo.push(_profile.id);
+                    setNotifyTo([...notifyTo]);
+                    const notificationRef = db.collection('notifications');
+                    const notificationId = notificationRef.doc().id;
+                    var notificationObj = new Notification({ _id: notificationId, _type: constants().NOTIFICATION.STARTED_FOLLOWING, _notifyTo: notifyTo, _createdBy: _userId }).getNotification();
+                    console.log(notificationObj);
+                    notificationRef.doc(notificationId).set(notificationObj).then(() => {
+                        console.log('hello');
+                    }).catch((err) => {
+                        console.log('err1', err);
+                        Alert.alert('Notification error');
+                    })
 
-            })
-                .catch((err) => {
-                    Alert.alert('Error', 'Something went wrong.');
+
                 })
+                    .catch((err) => {
+                        console.log('err2', err);
 
-            db.collection('users').doc(_profile.id).update({
-                followers: FieldValue.increment(1)
-            }).then(() => {
-                db.collection('users').where()
+                        Alert.alert('Error', 'Something went wrong.');
+                    })
+
+
             })
                 .catch((err) => {
+                    console.log('err3', err);
+
                     Alert.alert('Error', 'Something went wrong.');
                 })
 
         }).catch((error) => {
+            console.log('err4', error);
+
             Alert.alert('Error', 'Something went wrong.');
         })
         setLoading(false);
@@ -57,12 +79,11 @@ const ProfileView = (props) => {
                 const data = doc.data();
                 setProfile(data);
             })
-            console.log('Hello 1');
         })
         db.collection('followData').where('following', '==', _userId).onSnapshot(querySnapshot => {
             querySnapshot.forEach(doc => {
                 const data = doc.data();
-                if(data.follower === _profile.id) {
+                if (data.follower === _profile.id) {
                     setIsFollowing(true);
                 }
             })
@@ -117,10 +138,10 @@ const ProfileView = (props) => {
                                                 isFollowing ? (
                                                     <Text style={styles.followText}>Following</Text>
                                                 )
-                                                :
-                                                (
-                                                    <Text style={styles.followText}>Follow</Text>
-                                                )
+                                                    :
+                                                    (
+                                                        <Text style={styles.followText}>Follow</Text>
+                                                    )
                                             }
                                         </>
                                     )

@@ -90,7 +90,6 @@ const CreateTask = () => {
       if (userId) {
         members.push(userId);
       }
-      console.log(tags);
       const _data = new Task({ _title: task, _desc: desc, _members: members, _time: time, _dueBy: due, _endTime: endTime, _endDate: endDate, _tags: tags, _createdBy: userId, _createdAt: timestamp, _updatedAt: timestamp }).getDetails();
 
       taskRef

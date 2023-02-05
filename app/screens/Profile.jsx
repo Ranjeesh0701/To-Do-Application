@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { auth, db } from '../config/firebase';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const Profile = () => {
     const userId = auth.currentUser.uid;
@@ -22,7 +23,7 @@ const Profile = () => {
     <View style={styles.container}>
         <SafeAreaView style={styles.safeContainer}>
             <StatusBar />
-            <View style={styles.innerContainer}>
+            <ScrollView style={styles.innerContainer}>
                 <View style={styles.profileContainer}>
                     <View style={styles.myProfile}>
                         <View style={styles.profilePic}></View>
@@ -51,7 +52,7 @@ const Profile = () => {
                         <Text style={styles.shareProfileText}>Share Profile</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     </View>
   )

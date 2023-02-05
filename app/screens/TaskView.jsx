@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     marginRight: 5
   },
   tagsContainer: {
-    paddingTop: 10
+    paddingTop: 20
   },
   addTags: {
     fontWeight: '700'

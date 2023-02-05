@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal, Animated, Platform } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Dimensions, Modal, Animated, Platform, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { auth, db } from '../config/firebase'
 import { SafeAreaView, withSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,6 +54,13 @@ const Home = ({ navigation, user }) => {
     });
   }
 
+  const logout = () => {
+    // auth.signOut().then(() => {
+    //   navigation.replace('Login');
+    // }).catch((err) => {
+    //   Alert.alert('Error', 'Something went wrong');
+    // })
+  }
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -71,9 +78,9 @@ const Home = ({ navigation, user }) => {
               </Text>
             </View>
             <View style={styles.headerRightSection}>
-              <View style={styles.profileImageContainer}>
+              <Pressable style={styles.profileImageContainer} onPress={logout}>
                 <FontAwesome name='user' style={styles.profileImageIcon} />
-              </View>
+              </Pressable>
             </View>
           </View>
           <View style={styles.searchContainer}>
