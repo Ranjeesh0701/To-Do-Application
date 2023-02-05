@@ -77,7 +77,10 @@ const CreateTask = () => {
   const deleteTag = (id) => {
 
     setTags(tags.filter(tag => tag.id != id).map((tag, index) => {
-      tag.id = index;
+      return {
+        ...tag,
+        id: index + 1
+      }
     }));
   }
 
@@ -209,8 +212,8 @@ const CreateTask = () => {
               <Text style={styles.addTags}>Add tags</Text>
               <ScrollView horizontal={true} style={styles.tagContainer}>
                 {
-                  tags.length > 0 && tags.map(tag => (
-                    <View style={styles.tag} key={tag.id}>
+                  tags.length > 0 && tags.map((tag, index) => (
+                    <View style={[styles.tag, index > 0 && { marginLeft: 5 }]} key={tag.id}>
                       <View style={styles.name}>
                         <Text style={styles.nameText}>{tag.tag}</Text>
                       </View>

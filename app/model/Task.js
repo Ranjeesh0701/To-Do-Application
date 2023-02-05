@@ -23,6 +23,10 @@ class Task {
         this._desc = _desc;
     }
 
+    setTags(_tags) {
+        this._tags = _tags;
+    }
+
     setTime(_time) {
         this._time = _time;
     }

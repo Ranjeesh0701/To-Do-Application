@@ -90,6 +90,8 @@ const TaskView = (props) => {
         taskObj.setDesc(currentTask.desc);
       }
 
+      taskObj.setTags(currentTask.tags);
+
       taskObj.setUpdatedAt();
 
       var data = taskObj.getDetails();
@@ -106,16 +108,34 @@ const TaskView = (props) => {
   }
 
   const addTag = () => {
-    if(!editMode) return;
-    
+    if (!editMode) return;
+
     currentTask.tags.push({
       id: currentTask.tags.length + 1,
       tag: currentTag
     });
 
     setCurrentTag("");
-    setCurrentTask({...currentTask});
+    setCurrentTask({ ...currentTask });
 
+  }
+
+  const deleteTag = (id) => {
+    if(!editMode) return;
+
+    let tags = [...currentTask.tags];
+
+    tags = tags.filter(tag => tag.id != id)
+
+    tags = tags.map((tag, index) => {
+      return {
+        ...tag,
+        id: index + 1
+      }
+    })
+    currentTask.tags = tags;
+
+    setCurrentTask({ ...currentTask });
   }
 
   const completeTask = () => {
@@ -195,14 +215,18 @@ const TaskView = (props) => {
               <Text style={styles.addTags}>Add tags</Text>
               <ScrollView horizontal={true} style={styles.tagContainer}>
                 {
-                  currentTask?.tags?.length > 0 && currentTask?.tags?.map(tag => (
-                    <View style={styles.tag} key={tag.id}>
+                  currentTask?.tags?.length > 0 && currentTask?.tags?.map((tag, index) => (
+                    <View style={[styles.tag, index > 0 && {marginLeft: 5}]} key={tag.id}>
                       <View style={styles.name}>
                         <Text style={styles.nameText}>{tag.tag}</Text>
                       </View>
-                      <Pressable style={styles.tagDeleteContainer} onPress={() => deleteTag(tag.id)}>
-                        <Ionicons style={styles.tagDeleteIcon} name='close' />
-                      </Pressable>
+                      {
+                        editMode && (
+                          <Pressable style={styles.tagDeleteContainer} onPress={() => deleteTag(tag.id)}>
+                            <Ionicons style={styles.tagDeleteIcon} name='close' />
+                          </Pressable>
+                        )
+                      }
                     </View>
                   ))
                 }
