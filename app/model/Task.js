@@ -1,11 +1,13 @@
 class Task {
-    constructor({_id, _title, _desc, _members, _time, _dueBy, _tags, _createdBy, _state, _createdAt, _updatedAt}) {
+    constructor({_id, _title, _desc, _members, _time, _dueBy, _endTime, _endDate, _tags, _createdBy, _state, _createdAt, _updatedAt}) {
         this._id = _id || null;
         this._title = _title;
         this._desc = _desc || '';
         this._members = _members || [];
         this._time = _time || '';
         this._dueBy = _dueBy || '';
+        this._endTime = _endTime || '';
+        this._endDate = _endDate || '';
         this._tags = _tags || [];
         this._createdBy = _createdBy || '';
         this._state = _state || 'Created';
@@ -17,6 +19,18 @@ class Task {
         this._title = _title;
     }
 
+    setDesc(_desc) {
+        this._desc = _desc;
+    }
+
+    setTime(_time) {
+        this._time = _time;
+    }
+
+    setUpdatedAt() {
+        this._updatedAt = new Date();
+    }
+
     getDetails() {
         return {
             id: this._id,
@@ -25,6 +39,8 @@ class Task {
             members: this._members,
             time: this._time,
             dueBy: this._dueBy,
+            endTime: this._endTime,
+            endDate: this._endDate,
             tags: this._tags,
             state: this._state,
             createdBy: this._createdBy,

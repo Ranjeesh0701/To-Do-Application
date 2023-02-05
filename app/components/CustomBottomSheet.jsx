@@ -55,7 +55,6 @@ const CustomBottomSheet = (props) => {
     const userId = auth.currentUser.uid;
 
     const onChangeTime = (event, selectedTime) => {
-        console.log(selectedTime);
         const currentTime = selectedTime || time;
         setTime(currentTime);
     }

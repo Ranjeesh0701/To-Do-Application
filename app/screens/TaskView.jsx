@@ -1,4 +1,4 @@
-import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
@@ -24,23 +24,27 @@ const TaskView = (props) => {
 
   const [taskObj, setTaskObj] = useState(null);
 
+  const [currentTag, setCurrentTag] = useState("");
+
   useEffect(() => {
     _taskRef
       .where("createdBy", "==", userId)
       .onSnapshot((querySnapshot) => {
         querySnapshot.forEach(doc => {
           const task = doc.data();
-          if(doc.id === _taskId) {
+          if (doc.id === _taskId) {
             setCurrentTask(task);
-            setTaskObj(new Task({_id: _taskId, _title: task.title, _desc: task.desc, _dueBy: task.dueBy, _createdBy: task.createdBy, _time: task.time, _createdAt: task.createdAt, _updatedAt: task._updatedAt, _members: task._members, _tags: task._tags}));
-            const fireBaseTime = new Date(
-              doc.data().time.seconds * 1000 + doc.data().time.nanoseconds / 1000000
+            const firebaseTime = new Date(
+              task.time.seconds * 1000 + task.time.nanoseconds / 1000000
             );
-            setTime(fireBaseTime);
+            setTime(firebaseTime);
             const firebaseDate = new Date(
-              doc.data().dueBy.seconds * 1000 + doc.data().dueBy.nanoseconds / 1000000
+              task.dueBy.seconds * 1000 + task.dueBy.nanoseconds / 1000000
             )
+
             setDate(firebaseDate);
+
+            setTaskObj(new Task({ _id: _taskId, _desc: task.desc, _title: task.title, _desc: task.desc, _dueBy: date, _createdBy: task.createdBy, _time: time, _createdAt: task.createdAt, _updatedAt: task._updatedAt, _members: task._members, _tags: task._tags }));
           }
         });
       }, err => {
@@ -51,8 +55,10 @@ const TaskView = (props) => {
   const [editMode, setEditMode] = useState(false);
 
   const onChangeTime = (event, selectedTime) => {
-    const currentTime = date || selectedTime;
-    setDate(currentTime);
+    const currentTime = time || selectedTime;
+    setTime(currentTime);
+    currentTask.time = time;
+    setCurrentTask({ ...currentTask });
   }
 
   const onChangeDate = (event, selectedDate) => {
@@ -62,49 +68,76 @@ const TaskView = (props) => {
 
   const handleTitleChange = (value) => {
     currentTask.title = value;
-    setCurrentTask({...currentTask});
-  } 
+    setCurrentTask({ ...currentTask });
+  }
+
+  const handleDescChange = (value) => {
+    currentTask.desc = value;
+    setCurrentTask({ ...currentTask })
+  }
 
   const updateTask = () => {
-    if(taskObj) {
+    if (taskObj) {
       setEditMode(false);
-      if(taskObj._title != currentTask.title) {
+      if (taskObj._title != currentTask.title) {
         taskObj.setTitle(currentTask.title);
-      } 
-      const data = taskObj.getDetails();
-      
-      console.log(data.id);
-      db.collection('tasks').doc(data.id).update('title', taskObj._title).then(() => {
+      }
+      // if (taskObj._time != currentTask.time) {
+      //   console.log(currentTask);
+      //   taskObj.setTime(new Date(currentTask.time));
+      // }
+      if (taskObj._desc != currentTask.desc) {
+        taskObj.setDesc(currentTask.desc);
+      }
+
+      taskObj.setUpdatedAt();
+
+      var data = taskObj.getDetails();
+
+      db.collection('tasks').doc(data.id).set(data).then(() => {
         Alert.alert('Task updated successfully');
       }).catch(err => {
         console.log(err.message);
         Alert.alert('Error', 'Something went wrong');
       })
 
+
     }
+  }
+
+  const addTag = () => {
+    if(!editMode) return;
     
-  }  
+    currentTask.tags.push({
+      id: currentTask.tags.length + 1,
+      tag: currentTag
+    });
+
+    setCurrentTag("");
+    setCurrentTask({...currentTask});
+
+  }
 
   const completeTask = () => {
     db.collection('tasks')
   }
-  
+
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <SafeAreaView style={styles.safeContainer} edges={['top', 'left', 'right']}>
       <StatusBar />
       <View style={styles.header}>
-          <Pressable styles={styles.backContainer} onPress={() => props.navigation.goBack()}>
-            <Ionicons name='chevron-back' style={styles.backIcon} />
-          </Pressable>
-          <Pressable style={styles.editContainer} onPress={() => setEditMode(!editMode)}>
-            {
-              !editMode ? (
-                <>
+        <Pressable styles={styles.backContainer} onPress={() => props.navigation.goBack()}>
+          <Ionicons name='chevron-back' style={styles.backIcon} />
+        </Pressable>
+        <Pressable style={styles.editContainer} onPress={() => setEditMode(!editMode)}>
+          {
+            !editMode ? (
+              <>
                 <View><Ionicons name='create-outline' style={styles.editIcon} /></View>
                 <Text style={styles.editText}>Edit</Text>
-                </>
-              )
+              </>
+            )
               :
               (
                 <>
@@ -112,84 +145,108 @@ const TaskView = (props) => {
                   <Text style={styles.editText}>Cancel</Text>
                 </>
               )
-            }
-          </Pressable>
-        </View>
-      <ScrollView style={styles.innerContainer}> 
-        <View style={styles.container}>
-          <View>
-            <TextInput placeholder='What do you need to do?' style={[styles.taskInput, {color: editMode ? 'black': '#ccc'}]} editable={editMode} value={currentTask && currentTask.title} onChangeText={value => handleTitleChange(value)} />
-          </View>
-          <View style={styles.timingContainer}>
-            <View style={[styles.timingSection, styles.leftSection]}>
-              <Text style={styles.inputHeader}>Time</Text>
-              {/* <TextInput placeholder='00:00' style={styles.input} value={time} onChangeText={text => setTime(text)} /> */}
-              <DatePicker
-                testID='dateTimePicker'
-                accentColor='#1c1c1ccc'
-                mode='time'
-                value={time || new Date()}
-                is24Hour={true}
-                display='default'
-                onChange={onChangeTime}
-                disabled={!editMode}
-                style={{ alignSelf: 'left', marginTop: 10 }}
-              />
+          }
+        </Pressable>
+      </View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <ScrollView style={styles.innerContainer}>
+          <View style={styles.container}>
+            <View>
+              <TextInput placeholder='What do you need to do?' style={[styles.taskInput, { color: editMode ? 'black' : '#ccc' }]} editable={editMode} value={currentTask && currentTask.title} onChangeText={value => handleTitleChange(value)} />
             </View>
-            <View style={[styles.timingSection, styles.rightSection]}>
-              <Text style={styles.inputHeader}>Due by</Text>
-              {/* <TextInput placeholder='mm-dd-yyyy' style={styles.input} value={due} onChangeText={text => setDue(text)} /> */}
-              <DatePicker
-                testID='dateTimePicker'
-                accentColor='#1c1c1ccc'
-                value={date || new Date()}
-                mode='date'
-                is24Hour={true}
-                display='default'
-                onChange={onChangeDate}
-                disabled={!editMode}
-                style={{ alignSelf: 'left', marginTop: 10 }}
-              />
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.inputHeader}>Description</Text>
+              <TextInput editable={editMode} value={currentTask && currentTask.desc} style={[styles.descriptionInput, { color: editMode ? 'black' : '#ccc' }]} numberOfLines={10}
+                multiline={true} onChangeText={text => handleDescChange(text)} />
             </View>
-          </View>
-          <View style={styles.tagsContainer}>
-            <Text style={styles.addTags}>Add tags</Text>
-            <View style={styles.allTagsContainer}>
-              <Pressable style={styles.createTagContainer}>
-                <View style={styles.createTag}>
-                  <FontAwesome style={styles.addIcon} name='plus' />
-                  <Text style={styles.addTagText}>Add tag</Text>
+            <View style={styles.timingContainer}>
+              <View style={[styles.timingSection, styles.leftSection]}>
+                <Text style={styles.inputHeader}>Time</Text>
+                {/* <TextInput placeholder='00:00' style={styles.input} value={time} onChangeText={text => setTime(text)} /> */}
+                <DatePicker
+                  testID='dateTimePicker'
+                  accentColor='#1c1c1ccc'
+                  mode='time'
+                  value={time || new Date()}
+                  is24Hour={true}
+                  display='default'
+                  onChange={onChangeTime}
+                  disabled={!editMode}
+                  style={{ alignSelf: 'left', marginTop: 10 }}
+                />
+              </View>
+              <View style={[styles.timingSection, styles.rightSection]}>
+                <Text style={styles.inputHeader}>Due by</Text>
+                {/* <TextInput placeholder='mm-dd-yyyy' style={styles.input} value={due} onChangeText={text => setDue(text)} /> */}
+                <DatePicker
+                  testID='dateTimePicker'
+                  accentColor='#1c1c1ccc'
+                  value={date || new Date()}
+                  mode='date'
+                  is24Hour={true}
+                  display='default'
+                  onChange={onChangeDate}
+                  disabled={!editMode}
+                  style={{ alignSelf: 'left', marginTop: 10 }}
+                />
+              </View>
+            </View>
+            <View style={styles.tagsContainer}>
+              <Text style={styles.addTags}>Add tags</Text>
+              <ScrollView horizontal={true} style={styles.tagContainer}>
+                {
+                  currentTask?.tags?.length > 0 && currentTask?.tags?.map(tag => (
+                    <View style={styles.tag} key={tag.id}>
+                      <View style={styles.name}>
+                        <Text style={styles.nameText}>{tag.tag}</Text>
+                      </View>
+                      <Pressable style={styles.tagDeleteContainer} onPress={() => deleteTag(tag.id)}>
+                        <Ionicons style={styles.tagDeleteIcon} name='close' />
+                      </Pressable>
+                    </View>
+                  ))
+                }
+              </ScrollView>
+              <View style={styles.allTagsContainer}>
+                <Pressable style={styles.createTagContainer}>
+                  <View style={styles.createTagInputContainer}>
+                    <TextInput editable={editMode} value={currentTag} onChangeText={text => setCurrentTag(text)} style={styles.createTagInput} placeholder='Enter tag' />
+                  </View>
+                  <Pressable style={styles.createTag} onPress={addTag}>
+                    <FontAwesome style={styles.addIcon} name='plus' />
+                    <Text style={styles.addTagText}>Add tag</Text>
+                  </Pressable>
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.inviteContainer}>
+              <Text style={styles.inputHeader}>Invite</Text>
+              <View style={styles.assingedMembers}>
+                <View style={styles.member}>
+                  <FontAwesome name='user' style={styles.userAvatar} />
                 </View>
-              </Pressable>
-            </View>
-          </View>
-          <View style={styles.inviteContainer}>
-            <Text style={styles.inputHeader}>Invite</Text>
-            <View style={styles.assingedMembers}>
-              <View style={styles.member}>
-                <FontAwesome name='user' style={styles.userAvatar} />
-              </View>
-              <View style={styles.assignMember}>
-                <FontAwesome name='plus' style={styles.addIcon} />
+                <View style={styles.assignMember}>
+                  <FontAwesome name='plus' style={styles.addIcon} />
+                </View>
               </View>
             </View>
-          </View>
-          <View style={styles.createBtnContainer}>
-            <Text style={styles.inputHeader}>Status</Text>
-            {/* <TouchableOpacity disabled={!editMode} onPress={completeTask}> */}
-            <View style={styles.statusBarContainer}>
-              <ModalDropdown disabled={!editMode} options={['Not yet started', 'In Progress', 'Completed']} textStyle={{paddingHorizontal: 10, color: editMode ? '#1c1c1ccc': '#ccc', fontWeight: '700', fontSize: 13}} style={{backgroundColor: 'white', paddingVertical: 15, borderRadius: 10, width: '100%'}} dropdownStyle={{width: Dimensions.get('window').width - 40, borderRadius: 5, marginTop: 20, height: 35 * 3}} dropdownTextStyle={{fontSize: 13}} />
+            <View style={styles.createBtnContainer}>
+              <Text style={styles.inputHeader}>Status</Text>
+              {/* <TouchableOpacity disabled={!editMode} onPress={completeTask}> */}
+              <View style={styles.statusBarContainer}>
+                <ModalDropdown disabled={!editMode} options={['Not yet started', 'In Progress', 'Completed']} textStyle={{ paddingHorizontal: 10, color: editMode ? '#1c1c1ccc' : '#ccc', fontWeight: '700', fontSize: 13 }} style={{ backgroundColor: 'white', paddingVertical: 15, borderRadius: 10, width: '100%' }} dropdownStyle={{ width: Dimensions.get('window').width - 40, borderRadius: 5, marginTop: 20, height: 35 * 3 }} dropdownTextStyle={{ fontSize: 13 }} />
+              </View>
+              {/* </TouchableOpacity> */}
             </View>
-            {/* </TouchableOpacity> */}
+            <View style={styles.createBtnContainer}>
+              <TouchableOpacity disabled={!editMode} onPress={updateTask}>
+                <View style={[styles.createBtn, { backgroundColor: !editMode ? '#ccc' : '#1c1c1ccc' }]}><Text style={[styles.createText]}>Update Task</Text></View>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.createBtnContainer}>
-            <TouchableOpacity disabled={!editMode} onPress={updateTask}>
-              <View style={[styles.createBtn, {backgroundColor: !editMode ? '#ccc' : '#1c1c1ccc'}]}><Text style={[styles.createText]}>Update Task</Text></View>
-            </TouchableOpacity>
-          </View>
-        </View>
 
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -241,6 +298,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 6
   },
+  descriptionContainer: {
+    paddingTop: 20
+  },
+  descriptionInput: {
+    width: '100%',
+    fontSize: 17,
+    backgroundColor: 'white',
+    paddingVertical: 17,
+    paddingTop: 17,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginTop: 10
+  },
   timingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -275,7 +345,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderRadius: 6,
     marginVertical: 10,
     alignItems: 'center',
     alignSelf: 'flex-start',
@@ -333,5 +403,34 @@ const styles = StyleSheet.create({
   },
   statusBar: {
 
-  }
+  },
+  tagContainer: {
+    paddingTop: 10
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1c1c1ccc',
+    borderRadius: 30,
+    padding: 10
+  },
+  tagDeleteIcon: {
+    color: 'white',
+    paddingLeft: 4
+  },
+  nameText: {
+    color: 'white',
+    fontWeight: '600'
+  },
+  createTagInput: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 6,
+    marginRight: 10,
+    width: 70
+  },
+  createTagContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
 });

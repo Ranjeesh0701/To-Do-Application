@@ -62,7 +62,8 @@ const TabNavigator = () => {
     >
       <Tab.Screen name="Home" component={Home} options={{ headerShown: false }} />
       <Tab.Screen name="Search" component={Search} options={{ headerShown: false }} />
-      <Tab.Screen name="Create" component={CreateTask} options={{ tabBarButton: () => <CustomBottomSheet _translateY={_translateY} _lastOffset={_lastOffset} /> }} />
+      {/* <Tab.Screen name="Create" component={CreateTask} options={{ tabBarButton: () => <CustomBottomSheet _translateY={_translateY} _lastOffset={_lastOffset} /> }} /> */}
+      <Tab.Screen name="Create" component={CreateTask} options={{ headerShown: false }} />
       <Tab.Screen name="Notifications" component={Notifications} />
       <Tab.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
     </Tab.Navigator>
