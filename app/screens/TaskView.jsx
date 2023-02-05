@@ -55,15 +55,17 @@ const TaskView = (props) => {
   const [editMode, setEditMode] = useState(false);
 
   const onChangeTime = (event, selectedTime) => {
-    const currentTime = time || selectedTime;
+    const currentTime = selectedTime || time;
     setTime(currentTime);
     currentTask.time = time;
     setCurrentTask({ ...currentTask });
   }
 
   const onChangeDate = (event, selectedDate) => {
-    const currentDate = date || selectedDate;
+    const currentDate = selectedDate || date;
     setDate(currentDate);
+    currentTask.date = date;
+    setCurrentTask({ ...currentTask });
   }
 
   const handleTitleChange = (value) => {
@@ -82,14 +84,16 @@ const TaskView = (props) => {
       if (taskObj._title != currentTask.title) {
         taskObj.setTitle(currentTask.title);
       }
-      // if (taskObj._time != currentTask.time) {
-      //   console.log(currentTask);
-      //   taskObj.setTime(new Date(currentTask.time));
-      // }
+      if (taskObj._time != currentTask.time) {
+        taskObj.setTime(currentTask.time);
+      }
       if (taskObj._desc != currentTask.desc) {
         taskObj.setDesc(currentTask.desc);
       }
-
+      if(taskObj._date != currentTask.date) {
+        taskObj.setDate(currentTask.date);
+      }
+ 
       taskObj.setTags(currentTask.tags);
 
       taskObj.setUpdatedAt();

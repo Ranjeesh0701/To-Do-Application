@@ -31,6 +31,10 @@ class Task {
         this._time = _time;
     }
 
+    setDate(_dueBy) {
+        this._dueBy = _dueBy;
+    }
+
     setUpdatedAt() {
         this._updatedAt = new Date();
     }
